@@ -43,7 +43,7 @@ namespace Project
 					}
 				});
 
-			var result = Math.Pow(99, 2) / (Math.Sqrt(8) * Sum);
+			var result = 9801 / (Math.Sqrt(8) * Sum);
 			stopwatch.Stop();
 
 			Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
