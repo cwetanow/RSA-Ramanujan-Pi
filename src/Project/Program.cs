@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Numerics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Project
@@ -15,28 +15,40 @@ namespace Project
 		{
 			var parameters = ParseParameters(args);
 
-			var defaultTime = 0d;
+			Sum = 0;
+			stopwatch.Start();
 
-			for (int threads = 1; threads < 9; threads++)
+			Parallel.For(0, parameters.ElementsCount,
+				new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
+				i =>
 			{
-				Sum = 0;
-				stopwatch.Restart();
-				Parallel.For(0, parameters.ElementsCount,
-					new ParallelOptions { MaxDegreeOfParallelism = threads },
-					i =>
+				if (!parameters.IsQuiet)
 				{
-					Sum += Calculate(i);
-				});
-
-				var result = Math.Pow(99, 2) / (Math.Sqrt(8) * Sum);
-				stopwatch.Stop();
-
-				if (threads == 1)
-				{
-					defaultTime = stopwatch.ElapsedMilliseconds;
+					//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
 				}
 
-				Console.WriteLine($"Time: {stopwatch.ElapsedMilliseconds}, Threads: {threads}, Speedup: {string.Format("{0:F6}", defaultTime / stopwatch.ElapsedMilliseconds)}, Result: {result}");
+				Sum += Calculate(i);
+
+
+				if (!parameters.IsQuiet)
+				{
+					//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
+				}
+			});
+
+			var result = Math.Pow(99, 2) / (Math.Sqrt(8) * Sum);
+			stopwatch.Stop();
+
+			Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
+
+			WriteToFile(result, parameters.OutputFile);
+		}
+
+		static void WriteToFile(double result, string fileName)
+		{
+			using (var writer = File.AppendText(fileName))
+			{
+				writer.WriteLine(result);
 			}
 		}
 
