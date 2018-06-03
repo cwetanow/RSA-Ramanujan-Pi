@@ -11,40 +11,47 @@ namespace Project
 
 		private static double Sum;
 
-		static void Main(string[] args)
+		public static void Main(string[] args)
 		{
 			var parameters = ParseParameters(args);
 
+			var result = Solve(parameters);
+
+			WriteToFile(result, parameters.OutputFile);
+		}
+
+		public static double Solve(Parameters parameters)
+		{
 			Sum = 0;
 			stopwatch.Start();
 
 			Parallel.For(0, parameters.ElementsCount,
 				new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
 				i =>
-			{
-				if (!parameters.IsQuiet)
 				{
-					//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
-				}
+					if (!parameters.IsQuiet)
+					{
+						//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
+					}
 
-				Sum += Calculate(i);
+					Sum += Calculate(i);
 
 
-				if (!parameters.IsQuiet)
-				{
-					//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
-				}
-			});
+					if (!parameters.IsQuiet)
+					{
+						//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
+					}
+				});
 
 			var result = Math.Pow(99, 2) / (Math.Sqrt(8) * Sum);
 			stopwatch.Stop();
 
 			Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
 
-			WriteToFile(result, parameters.OutputFile);
+			return result;
 		}
 
-		static void WriteToFile(double result, string fileName)
+		public static void WriteToFile(double result, string fileName)
 		{
 			using (var writer = File.AppendText(fileName))
 			{
@@ -52,7 +59,7 @@ namespace Project
 			}
 		}
 
-		static Parameters ParseParameters(string[] args)
+		public static Parameters ParseParameters(string[] args)
 		{
 			var parameters = new Parameters();
 
@@ -96,21 +103,21 @@ namespace Project
 			return parameters;
 		}
 
-		static double Calculate(int n)
+		public static double Calculate(int n)
 		{
 			var result = (1103 + 26390 * n) / Math.Pow(396, 4 * n);
 
-			var top = n + 1;
+			var numerator = n + 1;
 
 			for (int i = 0; i < 3; i++)
 			{
-				var bottom = 1d;
+				var denominator = 1d;
 
 				for (int j = 0; j < n; j++)
 				{
-					result *= (top / bottom);
-					top++;
-					bottom++;
+					result *= (numerator / denominator);
+					numerator++;
+					denominator++;
 				}
 			}
 
