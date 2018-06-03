@@ -116,17 +116,5 @@ namespace Project
 
 			return result;
 		}
-
-		static long Factorial(int n)
-		{
-			var result = 1L;
-
-			for (int i = 1; i < n; i++)
-			{
-				result *= i;
-			}
-
-			return result;
-		}
 	}
 }
