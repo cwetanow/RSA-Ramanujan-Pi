@@ -5,123 +5,137 @@ using System.Threading.Tasks;
 
 namespace Project
 {
-	class Program
-	{
-		private static Stopwatch stopwatch = new Stopwatch();
+    public class Parameters
+    {
+        public const string DefaultOutputFile = "result.txt";
 
-		private static double Sum;
+        // -p
+        public int ElementsCount { get; set; }
+        // -t
+        public int MaxTasks { get; set; }
+        // -q
+        public bool IsQuiet { get; set; }
+        // -o
+        public string OutputFile { get; set; }
+    }
 
-		public static void Main(string[] args)
-		{
-			var parameters = ParseParameters(args);
+    public class Program
+    {
+        private static readonly Stopwatch stopwatch = new Stopwatch();
 
-			var result = Solve(parameters);
+        private static double Sum;
 
-			WriteToFile(result, parameters.OutputFile);
-		}
+        public static void Main(string[] args)
+        {
+            var parameters = ParseParameters(args);
 
-		public static double Solve(Parameters parameters)
-		{
-			Sum = 0;
-			stopwatch.Start();
+            var result = Solve(parameters);
 
-			Parallel.For(0, parameters.ElementsCount,
-				new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
-				i =>
-				{
-					if (!parameters.IsQuiet)
-					{
-						//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
-					}
+            WriteToFile(result, parameters.OutputFile);
+        }
 
-					Sum += Calculate(i);
+        public static double Solve(Parameters parameters)
+        {
+            Sum = 0;
+            stopwatch.Start();
+
+            Parallel.For(0, parameters.ElementsCount,
+                new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
+                i =>
+                {
+                    if (!parameters.IsQuiet)
+                    {
+                        //Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
+                    }
+
+                    Sum += Calculate(i);
 
 
-					if (!parameters.IsQuiet)
-					{
-						//Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
-					}
-				});
+                    if (!parameters.IsQuiet)
+                    {
+                        //Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
+                    }
+                });
 
-			var result = 9801 / (Math.Sqrt(8) * Sum);
-			stopwatch.Stop();
+            var result = 9801 / (Math.Sqrt(8) * Sum);
+            stopwatch.Stop();
 
-			Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
+            Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
 
-			return result;
-		}
+            return result;
+        }
 
-		public static void WriteToFile(double result, string fileName)
-		{
-			using (var writer = File.AppendText(fileName))
-			{
-				writer.WriteLine(result);
-			}
-		}
+        public static void WriteToFile(double result, string fileName)
+        {
+            using (var writer = File.AppendText(fileName))
+            {
+                writer.WriteLine(result);
+            }
+        }
 
-		public static Parameters ParseParameters(string[] args)
-		{
-			var parameters = new Parameters();
+        public static Parameters ParseParameters(string[] args)
+        {
+            var parameters = new Parameters();
 
-			for (int i = 0; i < args.Length; i++)
-			{
-				if (args[i] == "-t" || args[i] == "tasks")
-				{
-					if (args.Length > i + 1)
-					{
-						parameters.MaxTasks = int.Parse(args[i + 1]);
-						i++;
-					}
-				}
-				else if (args[i] == "-p")
-				{
-					if (args.Length > i + 1)
-					{
-						parameters.ElementsCount = int.Parse(args[i + 1]);
-						i++;
-					}
-				}
-				else if (args[i] == "-o")
-				{
-					if (args.Length > i + 1)
-					{
-						parameters.OutputFile = args[i + 1];
-						i++;
-					}
-				}
-				else if (args[i] == "-q")
-				{
-					parameters.IsQuiet = true;
-				}
-			}
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "-t" || args[i] == "tasks")
+                {
+                    if (args.Length > i + 1)
+                    {
+                        parameters.MaxTasks = int.Parse(args[i + 1]);
+                        i++;
+                    }
+                }
+                else if (args[i] == "-p")
+                {
+                    if (args.Length > i + 1)
+                    {
+                        parameters.ElementsCount = int.Parse(args[i + 1]);
+                        i++;
+                    }
+                }
+                else if (args[i] == "-o")
+                {
+                    if (args.Length > i + 1)
+                    {
+                        parameters.OutputFile = args[i + 1];
+                        i++;
+                    }
+                }
+                else if (args[i] == "-q")
+                {
+                    parameters.IsQuiet = true;
+                }
+            }
 
-			if (string.IsNullOrEmpty(parameters.OutputFile))
-			{
-				parameters.OutputFile = Parameters.DefaultOutputFile;
-			}
+            if (string.IsNullOrEmpty(parameters.OutputFile))
+            {
+                parameters.OutputFile = Parameters.DefaultOutputFile;
+            }
 
-			return parameters;
-		}
+            return parameters;
+        }
 
-		public static double Calculate(int n)
-		{
-			var result = (1103 + 26390 * n) / Math.Pow(396, 4 * n);
+        public static double Calculate(int n)
+        {
+            var result = (1103 + 26390 * n) / Math.Pow(396, 4 * n);
 
-			var numerator = n + 1;
+            var numerator = n + 1;
 
-			for (int i = 0; i < 3; i++)
-			{
-				var denominator = 1d;
+            for (var i = 0; i < 3; i++)
+            {
+                var denominator = 1d;
 
-				for (int j = 0; j < n; j++)
-				{
-					result *= (numerator / denominator);
-					numerator++;
-					denominator++;
-				}
-			}
+                for (var j = 0; j < n; j++)
+                {
+                    result *= (numerator / denominator);
+                    numerator++;
+                    denominator++;
+                }
+            }
 
-			return result;
-		}
-	}
+            return result;
+        }
+    }
 }
