@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Project
@@ -22,6 +24,7 @@ namespace Project
     public class Program
     {
         private static readonly Stopwatch stopwatch = new Stopwatch();
+        private static readonly Queue<int> threads = new Queue<int>();
 
         private static double Sum;
 
@@ -37,30 +40,41 @@ namespace Project
         public static double Solve(Parameters parameters)
         {
             Sum = 0;
+            for (var i = 1; i <= parameters.MaxTasks; i++)
+            {
+                threads.Enqueue(i);
+            }
+
             stopwatch.Start();
 
             Parallel.For(0, parameters.ElementsCount,
                 new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
                 i =>
                 {
-                    if (!parameters.IsQuiet)
+                    if (parameters.IsQuiet)
                     {
-                        //Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} started");
+                        Sum += Calculate(i);
                     }
-
-                    Sum += Calculate(i);
-
-
-                    if (!parameters.IsQuiet)
+                    else
                     {
-                        //Console.WriteLine($"Thread {Thread.CurrentThread.ManagedThreadId} stopped");
+                        var currentThread = Thread.CurrentThread.ManagedThreadId;
+                        var time = stopwatch.ElapsedMilliseconds;
+                        Console.WriteLine($"Thread {currentThread} started");
+
+                        Sum += Calculate(i);
+
+                        Console.WriteLine($"Thread {currentThread} stopped");
+
+                        time = stopwatch.ElapsedMilliseconds - time;
+                        Console.WriteLine($"Thread {currentThread} execution time is {time}ms");
                     }
                 });
 
             var result = 9801 / (Math.Sqrt(8) * Sum);
             stopwatch.Stop();
 
-            Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms, Threads: {parameters.MaxTasks}");
+            Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds}ms");
+            Console.WriteLine($"Threads used: {parameters.MaxTasks}");
 
             return result;
         }
