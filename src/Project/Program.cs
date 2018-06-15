@@ -24,7 +24,6 @@ namespace Project
     public class Program
     {
         private static readonly Stopwatch stopwatch = new Stopwatch();
-        private static readonly Queue<int> threads = new Queue<int>();
 
         private static double Sum;
 
@@ -40,10 +39,6 @@ namespace Project
         public static double Solve(Parameters parameters)
         {
             Sum = 0;
-            for (var i = 1; i <= parameters.MaxTasks; i++)
-            {
-                threads.Enqueue(i);
-            }
 
             stopwatch.Start();
 
