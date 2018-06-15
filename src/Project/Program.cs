@@ -46,18 +46,18 @@ namespace Project
                 new ParallelOptions { MaxDegreeOfParallelism = parameters.MaxTasks },
                 i =>
                 {
-                    if (parameters.IsQuiet)
+                    var currentThread = Thread.CurrentThread.ManagedThreadId;
+                    var time = stopwatch.ElapsedMilliseconds;
+
+                    if (!parameters.IsQuiet)
                     {
-                        Sum += Calculate(i);
-                    }
-                    else
-                    {
-                        var currentThread = Thread.CurrentThread.ManagedThreadId;
-                        var time = stopwatch.ElapsedMilliseconds;
                         Console.WriteLine($"Thread {currentThread} started");
+                    }
 
-                        Sum += Calculate(i);
+                    Sum += Calculate(i);
 
+                    if (!parameters.IsQuiet)
+                    {
                         Console.WriteLine($"Thread {currentThread} stopped");
 
                         time = stopwatch.ElapsedMilliseconds - time;
